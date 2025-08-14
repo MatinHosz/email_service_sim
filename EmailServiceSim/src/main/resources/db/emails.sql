@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS emails (
     body TEXT NOT NULL,
     sent_at DATE NOT NULL,
     parent_email_id INT NOT NULL,
-    type ENUM ('normal', 'reply', 'forward'),
+    type VARCHAR(100) NOT NULL,
 
     FOREIGN KEY (sender_id) REFERENCES people(id),
     FOREIGN KEY (parent_email_id) REFERENCES emails(id)
