@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS emails (
     subject NVARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
     sent_at DATE NOT NULL,
-    parent_email_id INT NOT NULL,
+    parent_email_id INT,
     type VARCHAR(100) NOT NULL,
 
     FOREIGN KEY (sender_id) REFERENCES people(id),
