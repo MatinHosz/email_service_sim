@@ -1,4 +1,4 @@
-package aut.ap.freamwork;
+package aut.ap.framework;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
