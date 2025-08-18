@@ -1,6 +1,6 @@
 package aut.ap.model;
 
-import aut.ap.freamwork.EServiceEntity;
+import aut.ap.framework.EServiceEntity;
 import jakarta.persistence.Basic;
 
 public class Person extends EServiceEntity {
