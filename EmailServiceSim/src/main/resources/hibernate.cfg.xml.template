@@ -23,8 +23,5 @@
         <property name="hibernate.format_sql">true</property>
         <property name="hibernate.highlight_sql">true</property>
 
-        <!-- batch setting -->
-        <property name="hibernate.jdbc.batch_size">50</property>
-        <property name="hibernate.order_inserts">true</property>
     </session-factory>
 </hibernate-configuration>
