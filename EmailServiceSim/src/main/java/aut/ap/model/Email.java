@@ -2,7 +2,8 @@ package aut.ap.model;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import aut.ap.freamwork.EServiceEntity;
+
+import aut.ap.framework.EServiceEntity;
 import jakarta.persistence.*;
 
 enum Type {
