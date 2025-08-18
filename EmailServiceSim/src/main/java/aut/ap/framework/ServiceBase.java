@@ -1,4 +1,4 @@
-package aut.ap.freamwork;
+package aut.ap.framework;
 
 import java.util.List;
 import java.util.function.Function;
@@ -66,9 +66,10 @@ public abstract class ServiceBase<T extends EServiceEntity> {
 
     public T fetchRefById(int id) {
         return getSessionFactory().fromTransaction(session -> session.getReference(classw, id));
-    } 
+    }
 
     protected SessionFactory getSessionFactory() {
         return SingletonSessionFactory.getSessionFactory();
     }
+
 }
