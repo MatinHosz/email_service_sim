@@ -17,29 +17,29 @@ public abstract class ServiceBase<T extends EServiceEntity> {
         this.classw = classw;
     }
 
-    public void persist(T entity) {
+    protected void persist(T entity) {
         getSessionFactory().inTransaction(session -> { 
         session.persist(entity);
         });
     }
 
-    public void remove(int id) {
+    protected void remove(int id) {
         getSessionFactory().inTransaction(session -> {
             session.remove(session.getReference(classw, id));
         });
     }
 
-    public void remove(T entity) {
+    protected void remove(T entity) {
         getSessionFactory().inTransaction(session -> {
             session.remove(entity);
         });
     }
 
-    public T fetchById(int id) {
+    protected T fetchById(int id) {
         return getSessionFactory().fromTransaction(session -> session.get(classw, id));
     }
 
-    public T fetchById(int id, Function<Session, RootGraph<T>> graphCreator) {
+    protected T fetchById(int id, Function<Session, RootGraph<T>> graphCreator) {
         return getSessionFactory().fromTransaction(session -> {
             RootGraph<T> graph = graphCreator.apply(session);
             
@@ -47,14 +47,14 @@ public abstract class ServiceBase<T extends EServiceEntity> {
         });
     } 
 
-    public List<T> fetchAll() {
+    protected List<T> fetchAll() {
         return getSessionFactory().fromTransaction(session -> {
             return session.createSelectionQuery("from " + classw.getSimpleName(), classw)
             .getResultList();
         });
     }
 
-    public List<T> fetchAll(Function<Session, RootGraph<T>> graphCreator) {
+    protected List<T> fetchAll(Function<Session, RootGraph<T>> graphCreator) {
         return getSessionFactory().fromTransaction(session -> {
             EntityGraph<T> graph = graphCreator.apply(session);
 
@@ -64,7 +64,7 @@ public abstract class ServiceBase<T extends EServiceEntity> {
         });
     }
 
-    public T fetchRefById(int id) {
+    protected T fetchRefById(int id) {
         return getSessionFactory().fromTransaction(session -> session.getReference(classw, id));
     }
 
