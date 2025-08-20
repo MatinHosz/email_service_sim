@@ -1,4 +1,4 @@
-package aut.ap.freamwork;
+package aut.ap.framework;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

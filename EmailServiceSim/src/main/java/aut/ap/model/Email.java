@@ -2,7 +2,8 @@ package aut.ap.model;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import aut.ap.freamwork.EServiceEntity;
+
+import aut.ap.framework.EServiceEntity;
 import jakarta.persistence.*;
 
 enum Type {
@@ -44,13 +45,31 @@ public class Email extends EServiceEntity {
     }
 
     public Email(Person sender, String subject, String body, Email parentEmail, String type) {
+        if (sender == null) {
+            throw new IllegalArgumentException("Sender cannot be null.");
+        }
+        if (subject == null || subject.trim().isEmpty()) {
+            throw new IllegalArgumentException("Subject cannot be null or empty.");
+        }
+        if (body == null || body.trim().isEmpty()) {
+            throw new IllegalArgumentException("Body cannot be null or empty.");
+        }
+        if (type == null || type.trim().isEmpty()) {
+            throw new IllegalArgumentException("Type cannot be null or empty.");
+        }
+        
+        try {
+            this.type = Type.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid email type: " + type);
+        }
+        
         code = codeGenerator(6);
         this.sender = sender;
         this.subject = subject;
         this.body = body;
         sentAt = LocalDate.now();
         this.parentEmail = parentEmail;
-        this.type = Type.valueOf(type.toUpperCase());
     }
 
     public String getCode() {
@@ -99,7 +118,7 @@ public class Email extends EServiceEntity {
     @Override
     public String toString() {
         return "Email{" +
-                "idCode='" + code + '\'' +
+                "code='" + code + '\'' +
                 ", sender=" + sender.getName() + '\'' +
                 ", subject='" + subject + '\'' +
                 ", body='" + body + '\'' +

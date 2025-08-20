@@ -1,8 +1,12 @@
 package aut.ap.model;
 
-import aut.ap.freamwork.EServiceEntity;
+import aut.ap.framework.EServiceEntity;
 import jakarta.persistence.Basic;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "persons")
 public class Person extends EServiceEntity {
 
     @Basic(optional = false)
@@ -18,6 +22,16 @@ public class Person extends EServiceEntity {
     }
 
     public Person(String name, String email, String password) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty.");
+        }
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty.");
+        }
+        if (password == null) {
+            throw new IllegalArgumentException("Password cannot be null.");
+        }
+        
         this.name = name;
         this.email = email;
         this.password = password;
