@@ -1,6 +1,6 @@
 package aut.ap.cli;
 
-import aut.ap.exception.InvalidEmailException;
+import aut.ap.exception.exceptions.InvalidEmailException;
 import aut.ap.framework.SingletonSessionFactory;
 import aut.ap.model.Email;
 import aut.ap.model.Person;

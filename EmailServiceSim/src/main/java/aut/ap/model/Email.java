@@ -45,7 +45,6 @@ public class Email extends EServiceEntity {
     }
 
     public Email(Person sender, String subject, String body, Email parentEmail, String type) {
-
         if (sender == null) {
             throw new IllegalArgumentException("Sender cannot be null.");
         }
@@ -64,6 +63,7 @@ public class Email extends EServiceEntity {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid email type: " + type);
         }
+        
         code = codeGenerator(6);
         this.sender = sender;
         this.subject = subject;
@@ -118,7 +118,7 @@ public class Email extends EServiceEntity {
     @Override
     public String toString() {
         return "Email{" +
-                "idCode='" + code + '\'' +
+                "code='" + code + '\'' +
                 ", sender=" + sender.getName() + '\'' +
                 ", subject='" + subject + '\'' +
                 ", body='" + body + '\'' +
