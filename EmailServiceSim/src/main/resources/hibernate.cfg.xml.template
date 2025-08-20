@@ -23,5 +23,8 @@
         <property name="hibernate.format_sql">true</property>
         <property name="hibernate.highlight_sql">true</property>
 
+        <mapping class="aut.ap.model.Person"/>
+        <mapping class="aut.ap.model.Email"/>
+    
     </session-factory>
 </hibernate-configuration>

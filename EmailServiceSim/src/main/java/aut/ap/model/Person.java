@@ -2,7 +2,11 @@ package aut.ap.model;
 
 import aut.ap.framework.EServiceEntity;
 import jakarta.persistence.Basic;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "persons")
 public class Person extends EServiceEntity {
 
     @Basic(optional = false)
