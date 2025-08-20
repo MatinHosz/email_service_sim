@@ -21,5 +21,8 @@
         <mapping class="aut.ap.model.Person"/>
         <mapping class="aut.ap.model.Email"/>
 
+        <mapping class="aut.ap.model.Person"/>
+        <mapping class="aut.ap.model.Email"/>
+    
     </session-factory>
 </hibernate-configuration>
