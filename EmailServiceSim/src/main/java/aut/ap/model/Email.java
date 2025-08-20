@@ -46,13 +46,31 @@ public class Email extends EServiceEntity {
     }
 
     public Email(Person sender, String subject, String body, Email parentEmail, String type) {
+        if (sender == null) {
+            throw new IllegalArgumentException("Sender cannot be null.");
+        }
+        if (subject == null || subject.trim().isEmpty()) {
+            throw new IllegalArgumentException("Subject cannot be null or empty.");
+        }
+        if (body == null || body.trim().isEmpty()) {
+            throw new IllegalArgumentException("Body cannot be null or empty.");
+        }
+        if (type == null || type.trim().isEmpty()) {
+            throw new IllegalArgumentException("Type cannot be null or empty.");
+        }
+        
+        try {
+            this.type = Type.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid email type: " + type);
+        }
+
         idCode = codeGenerator(6);
         this.sender = sender;
         this.subject = subject;
         this.body = body;
         sentAt = LocalDate.now();
         this.parentEmail = parentEmail;
-        this.type = Type.valueOf(type.toUpperCase());
     }
 
     public String getCode() {
