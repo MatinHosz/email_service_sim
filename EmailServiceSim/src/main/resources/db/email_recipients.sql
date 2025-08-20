@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS email_recipients(
     read_at DATE,
 
     FOREIGN KEY (email_id) REFERENCES emails(id),
-    FOREIGN KEY (recipient_id) REFERENCES people(id)
+    FOREIGN KEY (recipient_id) REFERENCES persons(id)
 );
