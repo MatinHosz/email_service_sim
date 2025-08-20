@@ -51,7 +51,7 @@ public class EmailRepository extends ServiceBase<Email> {
     public List<Email> fetchAllUnread(Integer recipientId) {
         return getSessionFactory().fromTransaction(session -> {
             return session.createNativeQuery(
-                    "select e.* from emails e join email_recipients r on e.id = r.email_id where r.recipient_id = :recipient_id and r.read_at = NULL",
+                    "select e.* from emails e join email_recipients r on e.id = r.email_id where r.recipient_id = :recipient_id and r.read_at is NULL",
                     Email.class)
                     .setParameter("recipient_id", recipientId)
                     .getResultList();

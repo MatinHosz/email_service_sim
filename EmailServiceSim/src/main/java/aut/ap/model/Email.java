@@ -17,8 +17,7 @@ enum Type {
 public class Email extends EServiceEntity {
 
     @Basic(optional = false)
-    @Column(name = "code")
-    private String idCode;
+    private String code;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "sender_id")
@@ -34,7 +33,7 @@ public class Email extends EServiceEntity {
     @Column(name = "sent_at")
     private LocalDate sentAt;
 
-    @OneToOne(optional = true)
+    @OneToOne
     @JoinColumn(name = "parent_email_id")
     private Email parentEmail;
 
@@ -46,7 +45,7 @@ public class Email extends EServiceEntity {
     }
 
     public Email(Person sender, String subject, String body, Email parentEmail, String type) {
-        idCode = codeGenerator(6);
+        code = codeGenerator(6);
         this.sender = sender;
         this.subject = subject;
         this.body = body;
@@ -56,7 +55,7 @@ public class Email extends EServiceEntity {
     }
 
     public String getCode() {
-        return idCode;
+        return code;
     }
 
     public Person getSender() {
@@ -101,7 +100,7 @@ public class Email extends EServiceEntity {
     @Override
     public String toString() {
         return "Email{" +
-                "idCode='" + idCode + '\'' +
+                "idCode='" + code + '\'' +
                 ", sender=" + sender.getName() + '\'' +
                 ", subject='" + subject + '\'' +
                 ", body='" + body + '\'' +

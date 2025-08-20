@@ -27,7 +27,7 @@ public class Cli {
     public void run() {
         while (true) {
             System.out.println("[L]ogin, [S]ign up, [E]xit:");
-            String command = scanner.nextLine();
+            String command = scanner.nextLine().trim();
 
             if (command.equalsIgnoreCase("L") || command.equalsIgnoreCase("Login"))
                 handleLogin();
@@ -35,7 +35,7 @@ public class Cli {
                 handleSignUp();
             else if (command.equalsIgnoreCase("E") || command.equalsIgnoreCase("Exit")) {
                 System.out.println("Goodbye!");
-                SingletonSessionFactory.shutdown(); // Gracefully shutdown hibernate
+                SingletonSessionFactory.shutdown();
                 return;
             } else
                 System.out.println("Invalid command.");
@@ -44,55 +44,68 @@ public class Cli {
 
     private void handleSignUp() {
         System.out.println("Name:");
-        String name = scanner.nextLine();
+        String name = scanner.nextLine().trim();
         System.out.println("Email:");
-        String email = scanner.nextLine();
+        String email;
+        try {
+            email = normalizeEmail(scanner.nextLine().trim());
+        } catch (InvalidEmailException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+
         System.out.println("Password:");
-        String password = scanner.nextLine();
+        String password = scanner.nextLine().trim();
 
         try {
             personService.register(name, email, password);
             System.out.println("Your new account is created.\nGo ahead and login!");
-        } catch (InvalidEmailException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException | InvalidEmailException e) {
             System.out.println(e.getMessage());
         }
     }
 
     private void handleLogin() {
         System.out.println("Email:");
-        String email = scanner.nextLine();
-        if (!email.contains("@")) {
-            email += "@milou.com";
+        String email;
+        try {
+            email = normalizeEmail(scanner.nextLine().trim());
+        } catch (InvalidEmailException e) {
+            System.out.println(e.getMessage());
+            return;
         }
+
         System.out.println("Password:");
-        String password = scanner.nextLine();
+        String password = scanner.nextLine().trim();
 
         try {
             currentUser = personService.login(email, password);
             System.out.println("Welcome back, " + currentUser.getName() + "!");
             showUnreadEmails();
             loggedInMenu();
-        } catch (InvalidEmailException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
     }
 
     private void showUnreadEmails() {
         List<Email> unreadEmails = emailService.repository.fetchAllUnread(currentUser.getId());
-        if (!unreadEmails.isEmpty()) {
-            System.out.println("Unread Emails:");
-            System.out.println(unreadEmails.size() + " unread emails:");
-            for (Email email : unreadEmails) {
-                System.out.println(
-                        "+ " + email.getSender().getEmail() + "\t" + email.getSubject() + " (" + email.getCode() + ")");
-            }
+        if (unreadEmails.isEmpty()) {
+            System.out.println("You have no unread emails.");
+            return;
+        }
+        System.out.println("Unread Emails:");
+        System.out.println(unreadEmails.size() + " unread emails:");
+        for (Email email : unreadEmails) {
+            System.out.println(
+                    "+ " + email.getSender().getEmail() + "\t" + email.getSubject() + " (" + email.getCode() + ")");
         }
     }
 
     private void loggedInMenu() {
         while (currentUser != null) {
             System.out.println("[S]end, [V]iew, [R]eply, [F]orward, [L]ogout:");
-            String command = scanner.nextLine();
+            String command = scanner.nextLine().trim();
             switch (command.toUpperCase()) {
                 case "S":
                     handleSendEmail();
@@ -142,7 +155,7 @@ public class Cli {
 
     private void handleViewEmails() {
         System.out.println("[A]ll emails, [U]nread emails, [S]ent emails, Read by [C]ode:");
-        String command = scanner.nextLine();
+        String command = scanner.nextLine().trim();
         switch (command.toUpperCase()) {
             case "A":
                 viewAllEmails();
@@ -164,11 +177,21 @@ public class Cli {
     private void viewAllEmails() {
         try {
             List<Email> receivedEmails = emailService.repository.fetchAllReceived(currentUser.getId());
-            Collections.reverse(receivedEmails); // Show newest first
+            Collections.reverse(receivedEmails);
             System.out.println("All Emails:");
             for (Email email : receivedEmails) {
+                List<Person> recipients = emailService.repository.getRecipients(email.getId());
+                String recipientStr = "-";
+                if (recipients != null && !recipients.isEmpty()) {
+                    List<String> recipientEmails = new ArrayList<>();
+                    for (Person recipient : recipients) {
+                        recipientEmails.add(recipient.getEmail());
+                    }
+                    recipientStr = String.join(", ", recipientEmails);
+                }
                 System.out.println(
-                        "+ " + email.getSender().getEmail() + "\t" + email.getSubject() + " (" + email.getCode() + ")");
+                    "+ " + email.getSender().getEmail() + "\t" + recipientStr + "\t" + email.getSubject() + " (" + email.getCode() + ")"
+                );
             }
         } catch (Exception e) {
             System.out.println("Failed to fetch emails: " + e.getMessage());
@@ -178,11 +201,21 @@ public class Cli {
     private void viewUnreadEmails() {
         try {
             List<Email> unreadEmails = emailService.repository.fetchAllUnread(currentUser.getId());
-            Collections.reverse(unreadEmails); // Show newest first
+            Collections.reverse(unreadEmails);
             System.out.println("Unread Emails:");
             for (Email email : unreadEmails) {
+                List<Person> recipients = emailService.repository.getRecipients(email.getId());
+                String recipientStr = "-";
+                if (recipients != null && !recipients.isEmpty()) {
+                    List<String> recipientEmails = new ArrayList<>();
+                    for (Person recipient : recipients) {
+                        recipientEmails.add(recipient.getEmail());
+                    }
+                    recipientStr = String.join(", ", recipientEmails);
+                }
                 System.out.println(
-                        "+ " + email.getSender().getEmail() + "\t" + email.getSubject() + " (" + email.getCode() + ")");
+                    "+ " + email.getSender().getEmail() + "\t" + recipientStr + "\t" + email.getSubject() + " (" + email.getCode() + ")"
+                );
             }
         } catch (Exception e) {
             System.out.println("Failed to fetch unread emails: " + e.getMessage());
@@ -196,12 +229,17 @@ public class Cli {
             System.out.println("Sent Emails:");
             for (Email email : sentEmails) {
                 List<Person> recipients = emailService.repository.getRecipients(email.getId());
-                List<String> recipientEmails = new ArrayList<>();
-                for (Person recipient : recipients) {
-                    recipientEmails.add(recipient.getEmail());
+                String recipientStr = "-";
+                if (recipients != null && !recipients.isEmpty()) {
+                    List<String> recipientEmails = new ArrayList<>();
+                    for (Person recipient : recipients) {
+                        recipientEmails.add(recipient.getEmail());
+                    }
+                    recipientStr = String.join(", ", recipientEmails);
                 }
-                System.out.println("+ " + String.join(", ", recipientEmails) + "\t" + email.getSubject() + " ("
-                        + email.getCode() + ")");
+                System.out.println(
+                    "+ " + recipientStr + "\t" + email.getSubject() + " (" + email.getCode() + ")"
+                );
             }
         } catch (Exception e) {
             System.out.println("Failed to fetch sent emails: " + e.getMessage());
@@ -210,15 +248,21 @@ public class Cli {
 
     private void viewEmailByCode() {
         System.out.println("Code:");
-        String code = scanner.nextLine();
+        String code = scanner.nextLine().trim();
         try {
             Email email = emailService.repository.fetchByCode(code);
+            if (email == null) {
+                System.out.println("Email with code " + code + " not found.");
+                return;
+            }
             List<Person> recipients = emailService.repository.getRecipients(email.getId());
-            boolean isRecipient = recipients.stream().anyMatch(p -> p.getId().equals(currentUser.getId()));
-
-            // Check if the user is authorized to read the email
-
-
+            boolean isRecipient = false;
+            for (Person p : recipients) {
+                if (p.getId().equals(currentUser.getId())) {
+                    isRecipient = true;
+                    break;
+                }
+            }
 
             if (email.getSender().getId().equals(currentUser.getId()) || isRecipient) {
                 List<String> recipientEmails = new ArrayList<>();
@@ -230,9 +274,8 @@ public class Cli {
                 if (isRecipient) {
                     emailService.repository.makeRead(code, currentUser.getId());
                 }
-            } else {
+            } else
                 System.out.println("You cannot read this email.");
-            }
         } catch (Exception e) {
             System.out.println("Failed to view email: " + e.getMessage());
         }
@@ -240,12 +283,16 @@ public class Cli {
 
     private void handleReplyToEmail() {
         System.out.println("Code:");
-        String code = scanner.nextLine();
+        String code = scanner.nextLine().trim();
         System.out.println("Body:");
         String body = scanner.nextLine();
 
         try {
             Email originalEmail = emailService.repository.fetchByCode(code);
+            if (originalEmail == null) {
+                System.out.println("Email with code " + code + " not found.");
+                return;
+            }
             emailService.reply(originalEmail, currentUser, body);
             System.out.println("Successfully sent your reply to email " + code + ".");
         } catch (Exception e) {
@@ -255,14 +302,18 @@ public class Cli {
 
     private void handleForwardEmail() {
         System.out.println("Code:");
-        String code = scanner.nextLine();
+        String code = scanner.nextLine().trim();
         try {
+            Email originalEmail = emailService.repository.fetchByCode(code);
+            if (originalEmail == null) {
+                System.out.println("Email with code " + code + " not found.");
+                return;
+            }
             List<Person> recipients = getRecipientsFromInput();
             if (recipients.isEmpty()) {
                 System.out.println("No valid recipients found.");
                 return;
             }
-            Email originalEmail = emailService.repository.fetchByCode(code);
             emailService.forward(recipients, originalEmail, currentUser);
             System.out.println("Successfully forwarded your email.");
         } catch (Exception e) {
@@ -271,25 +322,49 @@ public class Cli {
     }
 
     private List<Person> getRecipientsFromInput() {
-        try {
-            System.out.println("Recipient(s):");
-            String recipientsLine = scanner.nextLine();
-            String[] recipientEmails = recipientsLine.split(",\\s*");
-            List<String> recipientEmailList = new ArrayList<>();
-            for (String email : recipientEmails) {
-                if (!email.contains("@")) {
-                    email += "@milou.com";
-                }
-                recipientEmailList.add(email);
+        System.out.println("Recipient(s):");
+        String recipientsLine = scanner.nextLine().trim();
+        String[] recipientInputs = recipientsLine.split(",\\s*");
+        List<String> validEmails = new ArrayList<>();
+        for (String input : recipientInputs) {
+            try {
+                validEmails.add(normalizeEmail(input));
+            } catch (InvalidEmailException e) {
+                System.out.println(e.getMessage());
+                // If any recipient is invalid, stop and return an empty list
+                return new ArrayList<>();
             }
-            return personService.repository.fetchByEmail(recipientEmailList);
+        }
+
+        if (validEmails.isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            List<Person> persons = personService.repository.fetchByEmail(validEmails);
+            if (persons.size() != validEmails.size()) {
+                System.out.println("One or more recipients not found.");
+                return new ArrayList<>();
+            }
+            return persons;
         } catch (Exception e) {
             System.out.println("Failed to get recipients: " + e.getMessage());
             return new ArrayList<>();
         }
     }
 
-    // Print details of an email in a formatted way
+    private String normalizeEmail(String email) {
+        if (email == null || email.isEmpty() || email.contains(" ")) {
+            throw new InvalidEmailException("Email cannot be empty or contain spaces.");
+        }
+        if (!email.endsWith("@milou.com")) {
+            if (email.contains("@")) {
+                throw new InvalidEmailException("Only '@milou.com' emails are accepted.");
+            }
+            return email + "@milou.com";
+        }
+        return email;
+    }
+
     private void printEmailDetails(Email email, List<String> recipientEmails) {
         System.out.println("Recipient(s): " + String.join(", ", recipientEmails));
         System.out.println("Subject: " + email.getSubject());
